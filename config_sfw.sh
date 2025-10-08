@@ -6,7 +6,7 @@ echo "sysadmin:Sptech#2024" | sudo chpasswd
 
 sudo usermod -aG sudo sysadmin
 sudo mkdir -p /home/sysadmin/.ssh
-sudo cp ~/.ssh/authorized_keys /home/sysadmin/.ssh/
+sudo cp /home/ubuntu/.ssh/authorized_keys /home/sysadmin/.ssh/
 sudo chown sysadmin:sysadmin -R /home/sysadmin/.ssh/authorized_keys
 
 # Instalando o docker
