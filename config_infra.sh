@@ -70,7 +70,9 @@ aws ec2 run-instances \
     --key-name minhachave \
     --block-device-mappings '[{"DeviceName":"/dev/sda1","Ebs":{"VolumeSize":20,"VolumeType":"gp3","DeleteOnTermination":true}}]' \
     --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=syncheart-server}]' \
-    --user-data file://config_sfw.sh
+    --user-data file://config_sfw.sh \
+    --query 'Instances[0].{ID:InstanceId, Type:InstanceType, Key:KeyName, State:State.Name, Subnet:SubnetId}' \
+    --output table
 
 echo "Instância criada com sucesso"
 
