@@ -20,6 +20,8 @@ aws ec2 create-key-pair \
     --output text > minhachave.pem
 echo "Chave criada: minhachave"
 
+chmod 400 minhachave.pem
+
 echo -e "\nCriando grupo de segurança"
 aws ec2 create-security-group \
     --group-name launch-wizard-42 \
@@ -73,6 +75,7 @@ aws ec2 run-instances \
 echo "Instância criada com sucesso"
 
 INSTANCE_ID=$(aws ec2 describe-instances \
+    --filters "Name=instance-state-name,Values=running" \
     --query "Reservations[0].Instances[-1].[InstanceId]" \
     --output text)
 
