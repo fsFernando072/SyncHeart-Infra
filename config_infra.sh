@@ -77,7 +77,7 @@ aws ec2 run-instances \
 echo "Instância criada com sucesso"
 
 INSTANCE_ID=$(aws ec2 describe-instances \
-    --filters "Name=instance-state-name,Values=running" \
+    --filters "Name=instance-state-name,Values=running,pending" \
     --query "Reservations[0].Instances[-1].[InstanceId]" \
     --output text)
 
@@ -88,7 +88,26 @@ ALLOCATTION_ID=$(aws ec2 allocate-address \
 echo -e "\nCriando ip elástico"
 aws ec2 associate-address --instance-id "$INSTANCE_ID" --allocation-id "$ALLOCATTION_ID"
 
+echo -e "\nAssociando função IAM"
+aws ec2 associate-iam-instance-profile \
+    --instance-id "$INSTANCE_ID" \
+    --iam-instance-profile Name="LabInstanceProfile"
+
 echo -e "\nChecando informações das instâncias"
 aws ec2 describe-instances \
     --query "Reservations[*].Instances[*].[InstanceId,Tags[?Key=='Name'].Value|[0],KeyName,InstanceType,State.Name, PublicIpAddress]" \
     --output table
+
+TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+
+BUCKET_RAW="s3-raw-syncheart-$TIMESTAMP"
+echo -e "\nCriando bucket $BUCKET_RAW"
+aws s3 mb s3://$BUCKET_RAW
+
+BUCKET_TRUSTED="s3-trusted-syncheart-$TIMESTAMP"
+echo -e "\nCriando bucket $BUCKET_TRUSTED"
+aws s3 mb s3://$BUCKET_TRUSTED
+
+BUCKET_CLIENT="s3-client-syncheart-$TIMESTAMP"
+echo -e "\nCriando bucket $BUCKET_CLIENT"
+aws s3 mb s3://$BUCKET_CLIENT
