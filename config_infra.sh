@@ -60,6 +60,18 @@ aws ec2 authorize-security-group-ingress \
     --port 3306 \
     --cidr 0.0.0.0/0
 
+aws ec2 authorize-security-group-ingress \
+    --group-id "$SG_ID" \
+    --protocol tcp \
+    --port 3333 \
+    --cidr 0.0.0.0/0
+
+aws ec2 authorize-security-group-ingress \
+    --group-id "$SG_ID" \
+    --protocol tcp \
+    --port 8080 \
+    --cidr 0.0.0.0/0
+
 echo -e "\nCriando instância"
 aws ec2 run-instances \
     --image-id ami-0360c520857e3138f \

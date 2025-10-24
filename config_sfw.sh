@@ -39,3 +39,6 @@ rm -rf awscliv2.zip aws
 
 cd /home/ubuntu
 git clone https://github.com/fsFernando072/SyncHeart-Infra
+
+cp SyncHeart-Infra/docker-compose.yml ./
+rm -rf SyncHeart-Infra
