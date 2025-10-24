@@ -24,8 +24,17 @@ sudo apt-get update -y
 
 sudo apt-get -y install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
+sudo groupadd docker
+
+sudo usermod -aG docker $USER
+
+newgrp docker
+
 # Instalando AWS 
 curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
 unzip awscliv2.zip
 sudo ./aws/install
 rm -rf awscliv2.zip aws
+
+cd /home/ubuntu
+git clone https://github.com/fsFernando072/SyncHeart-Infra

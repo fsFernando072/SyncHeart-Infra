@@ -1,0 +1,16 @@
+services:
+  web:
+    image: fsfernando072/syncheart-web:1.0.0
+    container_name: syncheart_server_web
+    restart: always
+    ports:
+      - "3333:3333"
+    depends_on:
+      - db
+
+  db:
+    image: fsfernando072/syncheart-db:1.0.0
+    container_name: syncheart_db
+    restart: always
+    ports:
+      - "3306:3306"
