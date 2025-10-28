@@ -29,7 +29,7 @@ sudo groupadd docker
 sudo usermod -aG docker ubuntu
 sudo usermod -aG docker sysadmin
 
-newgrp docker
+sudo apt-get install -y openjdk-21-jdk
 
 # Instalando AWS 
 curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
