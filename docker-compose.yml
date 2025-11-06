@@ -7,6 +7,8 @@ services:
       - "3333:3333"
     depends_on:
       - db
+    networks:
+      - rede-syncheart
 
   db:
     image: fsfernando072/syncheart-db:1.0.0
@@ -14,3 +16,9 @@ services:
     restart: always
     ports:
       - "3306:3306"
+    networks:
+      - rede-syncheart
+
+networks:
+  rede-syncheart:
+    driver: bridge
