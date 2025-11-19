@@ -1,6 +1,6 @@
 services:
   web:
-    image: fsfernando072/syncheart-web:1.0.0
+    image: fsfernando072/syncheart-web:1.2.0
     container_name: syncheart_server_web
     restart: always
     ports:
@@ -11,7 +11,7 @@ services:
       - rede-syncheart
 
   db:
-    image: fsfernando072/syncheart-db:1.0.0
+    image: fsfernando072/syncheart-db:1.2.0
     container_name: syncheart_db
     restart: always
     ports:

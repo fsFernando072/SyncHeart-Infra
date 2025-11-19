@@ -110,16 +110,14 @@ aws ec2 describe-instances \
     --query "Reservations[*].Instances[*].[InstanceId,Tags[?Key=='Name'].Value|[0],KeyName,InstanceType,State.Name, PublicIpAddress]" \
     --output table
 
-TIMESTAMP=$(date +%Y%m%d-%H%M%S)
-
-BUCKET_RAW="s3-raw-syncheart-$TIMESTAMP"
+BUCKET_RAW="s3-raw-syncheart"
 echo -e "\nCriando bucket $BUCKET_RAW"
 aws s3 mb s3://$BUCKET_RAW
 
-BUCKET_TRUSTED="s3-trusted-syncheart-$TIMESTAMP"
+BUCKET_TRUSTED="s3-trusted-syncheart"
 echo -e "\nCriando bucket $BUCKET_TRUSTED"
 aws s3 mb s3://$BUCKET_TRUSTED
 
-BUCKET_CLIENT="s3-client-syncheart-$TIMESTAMP"
+BUCKET_CLIENT="s3-client-syncheart"
 echo -e "\nCriando bucket $BUCKET_CLIENT"
 aws s3 mb s3://$BUCKET_CLIENT
