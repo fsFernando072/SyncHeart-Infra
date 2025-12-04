@@ -46,3 +46,30 @@ aws s3 rb s3://$BUCKET_TRUSTED --force
 echo -e "\nExcluindo bucket $BUCKET_CLIENT"
 aws s3 rm s3://$BUCKET_CLIENT --recursive
 aws s3 rb s3://$BUCKET_CLIENT --force
+
+NOME_FUNCAO="lambda-syncheart-offline"
+NOME_REGRA="Regra-Monitoramento-6min"
+AWS_REGION="us-east-1"
+
+echo -e "\nExcluindo AWS Lambda e Triggers"
+
+echo "Excluindo URL da Lambda"
+aws lambda delete-function-url-config \
+    --function-name "$NOME_FUNCAO" \
+    --region "$AWS_REGION" 2>/dev/null || true
+
+echo "Removendo alvo da regra Lambda"
+aws events remove-targets \
+    --rule "$NOME_REGRA" \
+    --ids "1" \
+    --region "$AWS_REGION" 2>/dev/null || true
+
+echo "Excluindo EventBridge"
+aws events delete-rule \
+    --name "$NOME_REGRA" \
+    --region "$AWS_REGION" 2>/dev/null || true
+
+echo "Excluindo função Lambda"
+aws lambda delete-function \
+    --function-name "$NOME_FUNCAO" \
+    --region "$AWS_REGION" 2>/dev/null || true

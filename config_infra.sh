@@ -121,3 +121,103 @@ aws s3 mb s3://$BUCKET_TRUSTED
 BUCKET_CLIENT="s3-client-syncheart"
 echo -e "\nCriando bucket $BUCKET_CLIENT"
 aws s3 mb s3://$BUCKET_CLIENT
+
+NOME_FUNCAO="lambda-syncheart-offline"
+ROLE_ARN=$(aws iam get-role --role-name LabRole --query 'Role.Arn' --output text)  
+JAR_PATH="../SyncHeart-Java/etl_offline/target/etl_offline-1.0-SNAPSHOT.jar"     
+HANDLER="school.sptech.Main::enviarAlertasOfflineJira"                       
+RUNTIME="java21"                                    
+TIMEOUT=180                                         
+ENV_CHAVE="BD_IP"
+ENV_VALOR=$(aws ec2 describe-instances \
+     --filters "Name=tag:id,Values=${INSTANCE_ID}" \
+     --query 'Reservations[*].Instances[*].PublicIpAddress' \ 
+     --output text)
+
+echo "criando lambda offline" 
+aws lambda create-function \
+    --function-name "$NOME_FUNCAO" \
+    --runtime "$RUNTIME" \
+    --role "$ROLE_ARN" \
+    --handler "$HANDLER" \ 
+    --timeout "$TIMEOUT" \
+    --environment "Variables={$ENV_CHAVE=$ENV_VALOR}" \
+    --zip-file "fileb://$JAR_PATH" \
+    --output table
+
+echo "criando url para lambda"
+aws lambda create-function-url-config \
+    --function-name "$NOME_FUNCAO" \
+    --auth-type NONE \
+    --output table
+
+NOME_REGRA="Regra-Monitoramento-6min"
+INTERVALO_CRON="rate(6 minutes)"
+AWS_REGION="us-east-1"
+
+echo "Criando regra de agendamento"
+aws events put-rule \
+    --name "$NOME_REGRA" \
+    --schedule-expression "$INTERVALO_CRON" \
+    --state ENABLED \
+    --region "$AWS_REGION" \
+    --output text
+
+echo "Concedendo permissão de invocação para a Lambda"
+aws lambda add-permission \
+    --function-name "$NOME_FUNCAO" \
+    --statement-id "EventBridgeInvokePermission" \
+    --action "lambda:InvokeFunction" \
+    --principal "events.amazonaws.com" \
+    --source-arn "arn:aws:events:$AWS_REGION:$CONTA:rule/$NOME_REGRA" \
+    --region "$AWS_REGION" \
+    --output text
+
+echo "Vinculando a Lambda à regra de agendamento"
+aws events put-targets \
+    --rule "$NOME_REGRA" \
+    --targets "Id=1,Arn=arn:aws:lambda:$AWS_REGION:$CONTA:function:$NOME_FUNCAO" \
+    --region "$AWS_REGION" \
+    --output text
+
+# echo "criando lambda trusted"
+# NOME_FUNCAO_TRUSTED="lambda-syncheart-trusted"
+# TIMEOUT_TRUSTED=360       
+# HANDLER_TRUSTED="school.sptech.Main::main"                                
+# JAR_PATH_TRUSTED="../SyncHeart-Java/etl_v1/target/etl_v1-1.0-SNAPSHOT.jar"     
+
+# aws lambda create-function \
+#     --function-name "$NOME_FUNCAO_TRUSTED" \
+#     --runtime "$RUNTIME" \
+#     --role "$ROLE_ARN" \
+#     --handler "$HANDLER_TRUSTED" \
+#     --timeout "$TIMEOUT_TRUSTED" \ 
+#     --memory-size 512 \
+#     --environment "Variables={$ENV_CHAVE=$ENV_VALOR}" \
+#     --zip-file "fileb://$JAR_PATH_TRUSTED" \
+#     --output table
+	
+# echo "criando url para lambda trusted"
+# aws lambda create-function-url-config \
+#     --function-name "$NOME_FUNCAO_TRUSTED" \
+#     --auth-type NONE \
+#     --output table
+
+# CONTA=$(aws sts get-caller-identity --query "Account" --output text)
+# aws lambda add-permission 
+#     --function-name "$NOME_FUNCAO_TRUSTED" \
+#     --statement-id S3InvokePermission \
+#     --action "lambda:InvokeFunction" \
+#     --principal s3.amazonaws.com \
+#     --source-arn arn:aws:s3:::$BUCKET_RAW \
+#     --source-account $CONTA
+
+# echo "configurando trigger"
+# aws s3api put-bucket-notification-configuration --bucket $BUCKET_RAW --notification-configuration "{
+#   \"LambdaFunctionConfigurations\": [
+#     {
+#       \"LambdaFunctionArn\": \"arn:aws:lambda:us-east-1:$CONTA:function:$NOME_FUNCAO_TRUSTED\",
+#       \"Events\": [\"s3:ObjectCreated:*\"]
+#     }
+#   ]
+# }"
